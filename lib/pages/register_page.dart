@@ -23,6 +23,16 @@ class _RegisterPageState extends State<RegisterPage> {
   String _emailError = '';
   String _passwordError = '';
   String _confirmPasswordError = '';
+  String _selectedGestionnaire='';
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      final gestionnaireVM = context.read<GestionnaireViewModel>();
+      gestionnaireVM.getListGestionnaire(); // 🔥 Charge la liste ici
+    });
+  }
 
   @override
   void dispose() {
@@ -147,19 +157,22 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  DropdownButton<String>(
-                    value: gestionnaireVM.selectedGestionnaire,
-                    hint: const Text("Sélectionnez un gestionnaire"),
-                    items: gestionnaireVM.gestionnaires
-                        .map((g) => DropdownMenuItem(
-                      value: g['code'],
-                      child: Text(g['nom']),
-                    ))
-                        .toList(),
-                    onChanged: (value) {
-                      gestionnaireVM.setSelectedGestionnaire(value);
-                    },
-                  ),
+                  gestionnaireVM.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : DropdownButton<String>(
+
+                          value: gestionnaireVM.selectedGestionnaire,
+                          hint: const Text("Sélectionnez un gestionnaire"),
+                          items: gestionnaireVM.gestionnaires
+                              .map((g) => DropdownMenuItem(
+                            value: g['id'] ?? '', //
+                            child: Text(g['nom'] ?? ''),
+                          ))
+                              .toList(),
+                          onChanged: (value) {
+                            gestionnaireVM.setSelectedGestionnaire(value);
+                          },
+                      ),
                   const SizedBox(height: 16),
                   mailVM.isLoading
                       ? const Center(child: CircularProgressIndicator())
@@ -170,6 +183,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         _usernameController.text.trim();
                         final email = _emailController.text.trim();
                         final password = _passwordController.text.trim();
+                        final gestionnaireCode=  gestionnaireVM.selectedGestionnaire;
 
                         mailVM.sendMail(
                             username :username,
@@ -186,7 +200,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               Veuillez procéder à la validation après vérification.<br>
                               Cordialement.
                               """,
-                            codeGestionnaire:"",
+                            codeGestionnaire:gestionnaireCode,
                         );
                       }
                     },
