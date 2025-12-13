@@ -29,7 +29,7 @@ class GestionnaireViewModel extends ChangeNotifier {
   Future<void> getListGestionnaire() async {
     _setLoading(true);
     _error = null;
-
+//http://102.16.68.74:8081/dhis/api/programs/L1LoxYFumdQ.json?fields=id,name,displayName,description,programType,programStages[id,name,displayName,description,repeatable,programStageDataElements[dataElement[id,name,valueType]]]
     final apiParam =
         "api/29/trackedEntityInstances.json?program=L1LoxYFumdQ&ou=BkjcPj8Zv7E&paging=false";
     final baseUrl = dotenv.env['URL_SEAM_TEST_MODEL_DHIS']!;

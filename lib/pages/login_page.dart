@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
+import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,31 +13,47 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
+
+
 
   bool _obscurePassword = true;
   bool _isLoading = false;
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+  Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-      // Simulation d'une requête réseau
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() => _isLoading = false);
+    try {
+      // Appel du service d'authentification
+      final success = await _authService.login(
+        _usernameController.text.trim(),
+        _passwordController.text.trim(),
+      );
 
-        if (_usernameController.text == "admin" &&
-            _passwordController.text == "1234") {
-          // Navigation vers la page d’accueil
+      if (success) {
+
+        if (mounted) {
           Navigator.pushReplacementNamed(context, '/home');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Identifiants incorrects'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
         }
-      });
+      } else {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Échec de la connexion')),
+        );
+      }
+    } catch (e) {
+      // Gestion d’erreur (ex: problème réseau)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -124,6 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     TextButton(
                       onPressed: () {
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const RegisterPage()),
